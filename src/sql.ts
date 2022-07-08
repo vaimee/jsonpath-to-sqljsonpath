@@ -109,6 +109,10 @@ export class SQLJSONPathExpression {
     constructor(orExpression: LogicalOrExpression){
         this._orExpression = orExpression;
     }
+
+    toString(){
+        return this.root.toString();
+    }
 }
 
 export class LogicalOrExpression {
@@ -131,7 +135,7 @@ export class LogicalOrExpression {
     toString(){
         const leftExpr = this.left.toString()
         const rightExpr = this.right.map( expr => expr.toString()).join('||')
-        return `${leftExpr} ${rightExpr !== '' ? '|| '+rightExpr : ''} `;
+        return `${leftExpr}${rightExpr !== '' ? ' || '+rightExpr : ''}`;
     }
 }
 
@@ -155,11 +159,11 @@ export class LogicalAndExpression {
     toString() {
         const leftExpr = this.left.toString()
         const rightExpr = this.right.map(expr => expr.toString()).join(' || ')
-        return `${leftExpr} ${rightExpr !== '' ? '&& ' + rightExpr : ''} `;
+        return `${leftExpr}${rightExpr !== '' ? ' && ' + rightExpr : ''}`;
     }
 }
 
-export class ParenthesesCondition {
+export class ParenthesesCondition implements Condition{
     private readonly _condition: Condition;
     
     public get condition(): Condition {
@@ -175,10 +179,68 @@ export class ParenthesesCondition {
     }
 }
 
-export class ExistCondition {
+export class ExistCondition implements Condition {
+    private readonly _selector: RelativePathSelector;
     
+    constructor(selector:RelativePathSelector){
+        this._selector = selector;
+    }
+    
+    public get selector(): RelativePathSelector {
+        return this._selector;
+    }
+
+    toString(){
+        return `exists(${this.selector})`
+    }
 }
 
 export class CompareCondition {
+    private readonly _left: number | boolean | RelativePathSelector | string;
+    private readonly _right: number | boolean | RelativePathSelector | string;
+    private readonly _operator: string;
+    
+    constructor(left: RelativePathSelector | number | boolean | string, right: RelativePathSelector | number| boolean | string, operator: Operator){
+        this._left = left;
+        this._right= right;
+        this._operator = operator;
+    }   
 
+    public get left(): number | boolean | RelativePathSelector | string{
+        return this._left;
+    }
+    
+    public get right(): number | boolean | RelativePathSelector | string{
+        return this._right;
+    }
+    
+    public get operator(): string {
+        return this._operator;
+    }
+
+    toString(){
+        const left = typeof this.left === 'string' ? `"${this.left}"` : this.left;
+        const right = typeof this.right === 'string' ? `"${this.right}"` : this.right;
+        return `${left}${this.operator}${right}`
+    }
 }
+
+export class RelativePathSelector {
+    private readonly _steps: string[];
+    
+    constructor(steps: string[] = []){
+        this._steps = steps;
+    }
+    
+    public get steps(): string[] {
+        return this._steps;
+    }
+
+    toString(){
+        const dottedSteps = this.steps.join(".")
+        const prefix = this.steps.length > 0 ? "." : "";
+        return `@${prefix}${dottedSteps}`;
+    }
+}
+
+export type Operator = "=="  | "!" | "<" | ">" | ">=" | "<=" | "!="

@@ -1,4 +1,4 @@
-import { SQLJsonPath, KeyNameSelector, DotStarSelector, ArrayStarSelector, ArrayNumberSelector, DescendantSelector } from "../src/sql";
+import { SQLJsonPath, KeyNameSelector, DotStarSelector, ArrayStarSelector, ArrayNumberSelector, DescendantSelector, FilterSelector, LogicalAndExpression, CompareCondition, RelativePathSelector, SQLJSONPathExpression, LogicalOrExpression, ExistCondition } from "../src/sql";
 
 describe("SQL/JSONPath generator", () => {
     it("should produce $", () => {
@@ -89,5 +89,70 @@ describe("SQL/JSONPath generator", () => {
         const query = path.toString();
 
         expect(query).toBe("strict $.hello.foo[*]")
+    });
+
+    it("should produce $.hello?(@>130)", () => {
+        const path = new SQLJsonPath()
+        path.selectors.push(new KeyNameSelector("hello"));
+        path.selectors.push(new FilterSelector(new SQLJSONPathExpression(new LogicalOrExpression(new LogicalAndExpression(new CompareCondition(new RelativePathSelector(), 130, ">"))))));
+        const query = path.toString();
+
+        expect(query).toBe("strict $.hello?(@>130)")
+    });
+
+    it("should produce $.hello?(@>130 && true==@.foo)", () => {
+        const path = new SQLJsonPath()
+        path.selectors.push(new KeyNameSelector("hello"));
+        path.selectors.push(new FilterSelector(new SQLJSONPathExpression(
+            new LogicalOrExpression(
+                new LogicalAndExpression(
+                    new CompareCondition(new RelativePathSelector(), 130, ">"), 
+                    [new CompareCondition(true, new RelativePathSelector(["foo"]), "==")])))));
+        const query = path.toString();
+
+        expect(query).toBe("strict $.hello?(@>130 && true==@.foo)")
+    });
+
+    it('should produce $.hello?(@.foo.bar=="hi")', () => {
+        const path = new SQLJsonPath()
+        path.selectors.push(new KeyNameSelector("hello"));
+        path.selectors.push(new FilterSelector(new SQLJSONPathExpression(
+            new LogicalOrExpression(
+                new LogicalAndExpression(
+                    new CompareCondition(new RelativePathSelector(["foo","bar"]), 'hi', "=="))))));
+        const query = path.toString();
+
+        expect(query).toBe("strict $.hello?(@.foo.bar==\"hi\")")
+    });
+
+    it('should produce $.hello?(@.foo=="hi")?(@.foo>=2)', () => {
+        const path = new SQLJsonPath()
+        path.selectors.push(new KeyNameSelector("hello"));
+        path.selectors.push(new FilterSelector(new SQLJSONPathExpression(
+            new LogicalOrExpression(
+                new LogicalAndExpression(
+                    new CompareCondition(new RelativePathSelector(["foo"]), 'hi', "=="))))));
+        path.selectors.push(new FilterSelector(new SQLJSONPathExpression(
+            new LogicalOrExpression(
+                new LogicalAndExpression(
+                    new CompareCondition(new RelativePathSelector(["foo"]),2, ">="))))));
+        const query = path.toString();
+
+        expect(query).toBe('strict $.hello?(@.foo=="hi")?(@.foo>=2)')
+    });
+
+    it('should produce $.hello?(exists(@.b))', () => {
+        const path = new SQLJsonPath()
+        path.selectors.push(new KeyNameSelector("hello"));
+        path.selectors.push(new FilterSelector( new SQLJSONPathExpression(
+            new LogicalOrExpression(
+                new LogicalAndExpression(
+                    new ExistCondition(new RelativePathSelector(["b"]))
+                )
+            )
+        )))
+        const query = path.toString();
+
+        expect(query).toBe('strict $.hello?(exists(@.b))')
     });
 });
