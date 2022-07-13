@@ -1,0 +1,345 @@
+{
+  "tests": [
+    {
+      "name": "Root selector root node",
+      "selector": "$",
+      "document": {
+        "k": "v"
+      },
+      "result": [
+        {
+          "k": "v"
+        }
+      ]
+    },
+    {
+      "name": "Dot selector named value of an object",
+      "selector": "$.j",
+      "document": {
+        "j": {
+          "k": 3
+        }
+      },
+      "result": [
+        {
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "Dot selector named value in nested object",
+      "selector": "$.j.k",
+      "document": {
+        "j": {
+          "k": 3
+        }
+      },
+      "result": [3]
+    },
+    {
+      "name": "Dot wildcard selector object values",
+      "selector": "$.o.*",
+      "document": {
+        "o": {
+          "j": 1,
+          "k": 2
+        },
+        "a": [5, 3]
+      },
+      "result": [1, 2]
+    },
+    {
+      "name": "Dot wildcard selector array members",
+      "selector": "$.a.*",
+      "document": {
+        "o": {
+          "j": 1,
+          "k": 2
+        },
+        "a": [5, 3]
+      },
+      "result": [5, 3]
+    },
+    {
+      "name": "Index Selector named value in nested objects",
+      "selector": "$.o['j j']['k.k']",
+      "document": {
+        "o": {
+          "j j": {
+            "k.k": 3
+          }
+        },
+        "a": ["a", "b"]
+      },
+      "result": [3]
+    },
+    {
+      "name": "Index Selector member of array",
+      "selector": "$.a[1]",
+      "document": {
+        "o": {
+          "j j": {
+            "k.k": 3
+          }
+        },
+        "a": ["a", "b"]
+      },
+      "result": ["b"]
+    },
+    {
+      "name": "Index Selector member of array, from end",
+      "selector": "$.a[-2]",
+      "document": {
+        "o": {
+          "j j": {
+            "k.k": 3
+          }
+        },
+        "a": ["a", "b"]
+      },
+      "result": ["a"]
+    },
+    {
+      "name": "Filter Selector array value comparison",
+      "selector": "$.a[?@>3.5]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [5, 4, 6]
+    },
+    {
+      "name": "Filter Selector array value existence",
+      "selector": "$.a[?@.b]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [
+        {
+          "b": "ij"
+        },
+        {
+          "b": "ik"
+        }
+      ]
+    },
+    {
+      "name": "Filter Selector array value logical OR",
+      "selector": "$.a[?@<2 || @.b == \"ik\"]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [
+        1,
+        {
+          "b": "ik"
+        }
+      ]
+    },
+    {
+      "name": "Filter Selector Array value regular expression",
+      "selector": "$.a[?@.b =~ \"i.*\"]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [
+        {
+          "b": "ij"
+        },
+        {
+          "b": "ik"
+        }
+      ]
+    },
+    {
+      "name": "Filter Selector object value logical AND",
+      "selector": "$.o[?@>1 && @<4]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [2, 3]
+    },
+    {
+      "name": "Filter Selector object value logical OR",
+      "selector": "$.o[?@.u || @.x]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          }
+        }
+      },
+      "result": [
+        {
+          "u": 6
+        }
+      ]
+    },
+    {
+      "name": "Filter Selector object value parenthesis",
+      "selector": "$.o[?(@.u && @.u == 8) || @.x]",
+      "document": {
+        "a": [
+          3,
+          5,
+          1,
+          2,
+          4,
+          6,
+          {
+            "b": "ij"
+          },
+          {
+            "b": "ik"
+          }
+        ],
+        "o": {
+          "p": 1,
+          "q": 2,
+          "r": 3,
+          "s": 5,
+          "t": {
+            "u": 6
+          },
+          "z": {
+            "u": 8,
+            "b": true
+          }
+        }
+      },
+      "result": [
+        {
+          "u": 8,
+          "b": true
+        }
+      ]
+    }
+  ]
+}

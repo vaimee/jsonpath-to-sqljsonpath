@@ -8,20 +8,22 @@
     IntegerIndexSelector,
     IndexWildcardSelector,
     SliceSelector,
-    DescendatSelector,
+    DescendantSelector,
     FilterSelector,
-    Expression,
+    ListSelector,
     OrExpression,
     AndExpression,
     CompExpression,
-    ParentesisExpression,
+    ParenthesisExpression,
     RegexExpression,
-    ExistExpression
+    ExistExpression,
+    RelSingularPath,
+    AbsSingularPath
    } = require("./ast.js");
 
 }
 
-jsonPath = rootSelector selectors:(S @(dotSelector / dotWildSelector / indexSelector / indexWildcardSelector / sliceSelector / descendantSelector / filterSelector ))* {
+jsonPath = rootSelector selectors:(S @(dotSelector / dotWildSelector / indexSelector / indexWildcardSelector / sliceSelector / descendantSelector / filterSelector / listSelector  ))* {
     return new JSONPath(selectors)
 }
 
@@ -61,7 +63,7 @@ end= INTEGER
 step= INTEGER
 
 descendantSelector= ".." subSelector:(dotMemberName / indexSelector / indexWildcardSelector / "*") {
-    return new DescendatSelector(subSelector)
+    return new DescendantSelector(subSelector)
 }
 
 filterSelector= "[" S filter:filter S "]" {
@@ -72,7 +74,7 @@ booleanExpr= logicalOrExpr
 logicalOrExpr= left:logicalAndExpr right:(S "||" S @logicalAndExpr)* {
     return new OrExpression(left, right)
 }
-logicalAndExpr= left:basicExpr right:(S "&&" @basicExpr)* {
+logicalAndExpr= left:basicExpr right:(S "&&" S @basicExpr)* {
     return new  AndExpression(left,right)
 }
 basicExpr= relationExpr / existExpr / parenExpr 
@@ -80,10 +82,14 @@ existExpr= negated:(NEG_OP S)? path:singularPath {
     return new ExistExpression(negated !== null, path)
 }
 singularPath= relSingularPath / absSingularPath
-relSingularPath= "@" (S @(dotSelector / indexSelector))*
-absSingularPath= rootSelector (S @(dotSelector / indexSelector))*
+relSingularPath= "@" path:(S @(dotSelector / indexSelector))* {
+    return new RelSingularPath(path)
+}
+absSingularPath= rootSelector path:(S @(dotSelector / indexSelector))*{
+    return new RelSingularPath(path)
+}
 parenExpr= (NEG_OP S)? "(" S expression:booleanExpr S ")" {
-    return new ParentesisExpression(expression)
+    return new ParenthesisExpression(expression)
 }
 relationExpr= compExpr / regexExpr
 compExpr= left:comparable S operator:compOp S right:comparable {
@@ -96,13 +102,15 @@ regexExpr= path:(singularPath / stringLiteral) S REGEX_OP S regex:regex {
 }
 regex=stringLiteral
 
-listSelector= "[" S listEntry (S "," S listEntry)+ S"]"
-listEntry= (quotedMemberName / elementIndex / sliceIndex / filter)
+listSelector= "[" S first:listEntry entries:(S "," S @listEntry)+ S"]" {
+    return new ListSelector([first, ...entries])
+}
+listEntry= quotedMemberName / sliceIndex / elementIndex / filter
 
 // Literals
 stringLiteral= ('"' chars:doubleQuoted* '"' { return chars.join("")}) / ("'" chars:singleQuoted* "'" { return chars.join("") }) 
-doubleQuoted= UNESCAPED / [\x27] / ESC [\x22] / ESC ESCAPABLE
-singleQuoted= UNESCAPED / [\x22] / ESC [\x27] / ESC ESCAPABLE
+doubleQuoted= UNESCAPED / [\x27] / (ESC [\x22] { return text()} ) / (ESC ESCAPABLE { return text()})
+singleQuoted= UNESCAPED / [\x22] / (ESC [\x27] { return text()} ) /  (ESC ESCAPABLE { return text()})
 true= "true" { return true}
 false= "false" { return false}
 null= "null" { return null}
@@ -125,16 +133,21 @@ ALPHA = [a-z]i
 DIGIT = [0-9]
 DIGIT1 = [1-9]
 INTEGER = '-'? ("0" / (DIGIT1 DIGIT*) ) {
-    return parseFloat(text());
+    const number = parseInt(text())
+    // https://www.ietf.org/archive/id/draft-ietf-jsonpath-base-05.html#section-3.1-4
+    if(number <= -(2**53) || number >= 2**53){
+        throw new Error("Integer out of range")
+    }
+    return number;
 }
 
 H
   = [0-9a-f]i
 // TODO: Verify if it differs from the spec
-UNICODE= "\\" digits:$(H H? H? H? H? H?) ("\r\n" / [ \t\r\n\f])? {
-      return String.fromCharCode(parseInt(digits, 16));
-    }
-ESCAPABLE= UNICODE / "\\" ch:[^\r\n\f0-9a-f]i { return ch; }
+UNICODE= "u" digits:$(H H? H? H? H? H?) ("\r\n" / [ \t\r\n\f])? {
+      return text();
+}
+ESCAPABLE= UNICODE / ch:[^\r\n\f0-9a-f]i { return ch; } / [b,f]
 
 NONASCII
   = [\x80-\uFFFF]
