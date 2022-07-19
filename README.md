@@ -1,5 +1,5 @@
 # JSONPath to SQL/JSONPath
-![](https://img.shields.io/badge/compliance-%20~90%25-green?style=for-the-badge)
+![](https://img.shields.io/badge/compliance-%20~90%25-green?style=for-the-badge) ![](https://img.shields.io/bundlephobia/min/@vaimee/jsonpath-to-sqljsonpath?style=for-the-badge)
 
 This library is a tentative mapping of emerging [JSONPath standard](https://datatracker.ietf.org/doc/html/draft-ietf-jsonpath-base) to [SQL/JSONPath](https://www.iso.org/standard/67367.html). Currently, the library follows closely the tests reported in [jsonpath-compliance-test-suite](https://github.com/jsonpath-standard/jsonpath-compliance-test-suite) and it verifies the mapping using [PostgresSQL](https://www.postgresql.org/) as a db service.
 
