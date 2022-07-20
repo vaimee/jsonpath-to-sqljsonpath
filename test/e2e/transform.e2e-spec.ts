@@ -1,6 +1,7 @@
 import { knex as Knex, Knex as KnexClient } from 'knex';
 import cts from '../../jsonpath-compliance-test-suite/cts.json';
 import examples from './ietf-examples.json';
+import extended from './extended-tests.json';
 import { transform } from '../../src/transformer';
 
 describe('Transform', () => {
@@ -60,5 +61,9 @@ describe('Transform', () => {
 
   describe('IETF examples tests', () => {
     generateTests(examples.tests as unknown as typeof cts.tests, 'tests-examples');
+  });
+
+  describe('Extended tests', () => {
+    generateTests(extended.tests as unknown as typeof cts.tests, 'tests-extended');
   });
 });

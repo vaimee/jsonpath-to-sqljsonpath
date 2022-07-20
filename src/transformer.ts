@@ -201,6 +201,8 @@ function transformSingularPath(singPath: SingularPath): RelativePathSelector {
   for (const selector of singPath.path) {
     if (selector instanceof DotSelector) {
       paths.push(selector.id);
+    } else if (selector instanceof MemberNameIndexSelector) {
+      paths.push(new KeyNameStringSelector(selector.name).toString().substring(1));
     } else {
       throw new Error('Not supported');
     }

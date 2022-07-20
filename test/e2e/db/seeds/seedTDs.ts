@@ -4,14 +4,17 @@ import { Knex } from 'knex';
 /* eslint-disable @typescript-eslint/no-var-requires */
 const testSuite = require('../../../../jsonpath-compliance-test-suite/cts.json');
 const exampleTestSuite = require('../../ietf-examples.json');
+const extendedTestSuite = require('../../extended-tests.json');
 
 export async function seed(knex: Knex): Promise<void> {
   // Deletes ALL existing entries
   await knex('tests').del();
   await knex('tests-examples').del();
+  await knex('tests-extended').del();
 
   await seedTable(knex, 'tests', testSuite.tests);
   await seedTable(knex, 'tests-examples', exampleTestSuite.tests);
+  await seedTable(knex, 'tests-extended', extendedTestSuite.tests);
 }
 
 async function seedTable(knex: Knex, table: string, tests: Record<string, unknown>[]) {

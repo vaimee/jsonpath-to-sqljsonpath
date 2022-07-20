@@ -1,0 +1,21 @@
+{
+    "tests": [
+        {
+            "name": "filter with a index selector",
+            "selector": "$[?@['@type'] == 'test']",
+            "document": [
+                {
+                    "@type": "test"
+                },
+                {
+                    "@type": "no-test"
+                }
+            ],
+            "result": [
+                {
+                    "@type": "test"
+                }
+            ]
+        }
+    ]
+}

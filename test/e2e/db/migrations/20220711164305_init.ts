@@ -9,6 +9,10 @@ export async function up(knex: Knex): Promise<void> {
     .createTable('tests-examples', (table) => {
       table.increments('id').primary();
       table.jsonb('document').notNullable();
+    })
+    .createTable('tests-extended', (table) => {
+      table.increments('id').primary();
+      table.jsonb('document').notNullable();
     });
 }
 
