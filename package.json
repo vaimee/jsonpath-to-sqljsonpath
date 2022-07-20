@@ -1,6 +1,6 @@
 {
   "name": "@vaimee/jsonpath-to-sqljsonpath",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An utility package to convert JSONPath expression to SQL/JSONPath queries",
   "main": "./dist/src/index.js",
   "scripts": {
