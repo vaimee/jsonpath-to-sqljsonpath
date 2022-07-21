@@ -64,22 +64,7 @@ export function transform(queryJSONPath: string): Array<string> {
         ),
       );
     } else if (selector instanceof IndexWildcardSelector) {
-      if (paths[1] === undefined) {
-        paths[1] = paths[0].clone();
-      }
-      paths[0].selectors.push(new DotStarSelector());
-      paths[1].selectors.push(
-        new ArrayStarSelector(),
-        new SQLFilterSelector(
-          new SQLJSONPathExpression(
-            new LogicalOrExpression(
-              new LogicalAndExpression(
-                new CompareCondition(new RelativePathSelector(), new RelativePathSelector(), '=='),
-              ),
-            ),
-          ),
-        ),
-      );
+      paths.forEach((path) => path.selectors.push(new ArrayStarSelector()));
     } else if (selector instanceof MemberNameIndexSelector) {
       paths.forEach((path) => path.selectors.push(new KeyNameStringSelector(selector.name)));
     } else if (selector instanceof IntegerIndexSelector) {

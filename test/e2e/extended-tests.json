@@ -16,6 +16,114 @@
                     "@type": "test"
                 }
             ]
+        },
+        {
+            "name": "dot selector with array",
+            "selector": "$.forms.href",
+            "document": {
+                "forms": [
+                    {
+                        "href": "http://example.com"
+                    }
+                ]
+            },
+            "result": []
+        },
+        {
+            "name": "star selector with array of objects",
+            "selector": "$.forms[*]",
+            "document": {
+                "forms": [
+                    {
+                        "test": 3,
+                        "href": "http://example.com"
+                    },
+                    {
+                        "test": 4,
+                        "href": "http://example2.com"
+                    }
+                ]
+            },
+            "result": [
+                {
+                    "test": 3,
+                    "href": "http://example.com"
+                },
+                {
+                    "test": 4,
+                    "href": "http://example2.com"
+                }
+            ]
+        },
+        {
+            "name": "filter selector with array of objects",
+            "selector": "$.forms[?@['test'] == 3]",
+            "document": {
+                "forms": [
+                    {
+                        "test": 3,
+                        "href": "http://example.com"
+                    },
+                    {
+                        "test": 4,
+                        "href": "http://example2.com"
+                    }
+                ]
+            },
+            "result": [
+                {
+                    "test": 3,
+                    "href": "http://example.com"
+                }
+            ]
+        },
+        {
+            "name": "filter selector with array of objects and regex",
+            "selector": "$.forms[?@.href =~ 'http://.*']",
+            "document": {
+                "forms": [
+                    {
+                        "test": 3,
+                        "href": "http://example.com"
+                    },
+                    {
+                        "test": 4,
+                        "href": "not://example2.com"
+                    }
+                ]
+            },
+            "result": [
+                {
+                    "test": 3,
+                    "href": "http://example.com"
+                }
+            ]
+        },
+        {
+            "name": "filter selector with array of objects and a wildcard regex",
+            "selector": "$.forms[?@.href =~ '(.)+']",
+            "document": {
+                "forms": [
+                    {
+                        "test": 3,
+                        "href": "http://example.com"
+                    },
+                    {
+                        "test": 4,
+                        "href": "not://example2.com"
+                    }
+                ]
+            },
+            "result": [
+                {
+                    "test": 3,
+                    "href": "http://example.com"
+                },
+                {
+                    "test": 4,
+                    "href": "not://example2.com"
+                }
+            ]
         }
     ]
 }
